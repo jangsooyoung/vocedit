@@ -7,15 +7,79 @@ import xml.etree.ElementTree as xml_tree
 import os.path
 import cv2
 import numpy
-IMG_SZ=100
+from datetime import datetime
 
 set_debug_level=0
+
+help_text = ( "<<객체선택 조작>>\n"
+	"전체선택    : Ctl-A \n"
+	"전체선택취소 : ESC\n"  
+	"선책추가  : 왼쪽마우스 더블클릭 \n"  
+	"선책취소  : 오른마우스 클릭 \n"  
+	"선택삭제     : Del     \n"
+	"Bean자동분석 : Ctrl-P  \n"
+	"\n"
+	"<<파일>>"
+	"파일 읽기 : Ctl-R      \n"
+	"파일 저장 : Ctl-U      \n"
+	"이전 파일 : PageUp     \n"
+	"다음 파일 : PageDown   \n"
+	"\n"
+	"<<객체생성>>\n"
+	"-Drag하여 객체영역선택\n"
+	"-객체명을 수정한후 저장 \n"
+	"\n"
+	"<<객체명 변경>>\n"
+	"-여러개 객체를 더블클릭\n"
+	"-객체명을 수정한 후 저장\n")
+configm_msg = "총 {} 개의 선택 캑체의 명칭을 {}로 통일할까요 ?"
+OName     = "O명"
+OShow     = "O보임"
+OSearch   = "검색"
+OunSelect = "O선택취소"
+OSave     = "O저장"
+OErase    = "O지움"
+FName     = "파일명"
+FRead     = "읽기"
+FWrite    = "저장"
+'''
+help_text =  ("<< Object manipulation >> \n"
+	"Select all  : Ctl-A \n"
+	"Unselect all: ESC \n"
+	"Add select obj : left mouse double click \n"
+	"cancel select obj: right click \n"
+	"Delete selected: Del \n"
+	"\n"
+	"<< File >>\n"
+	"Read File: Ctl-R \n"
+	"Save file: Ctl-U \n"
+	"Previous file: PageUp \n"
+	"Following file: PageDown \n"
+	"\n"
+	"<< Create Object >> \n"
+	" -Drag to select object region \n"
+	" - modify the object name and save it \n"
+	"\n"
+	"<< rename object >> \n"
+	" - double click on multiple objects \n"
+	" - modify the object name and save it\n")
+configm_msg = "Do you want to unify the names of the {} selection bodies with {}?"
+OName     = "ObjectName"
+OShow     = "ObjectShow"
+OSearch   = "Search"
+OunSelect = "Object unselect"
+OSave     = "Object save"
+OErase    = "Object erase"
+FName     = "File Name"
+FRead     = "File Read"
+FWrite    = "File Write"
+'''
 
 def log(debug, s):
 		global set_debug_level
 		if debug > set_debug_level :
 			return
-		print(getNow(), s)
+		print(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3], s)
 
 class Obj:
 	def __init__(self, name, xmin, ymin, xmax, ymax, truncated=0, difficult=0, objectBox=None, objectNm=None, objectNmBg=None, parent=None):
@@ -48,63 +112,62 @@ class VocEditor:
 		self.image_list = image_list
 		self.curr_image_index = 0
 
-		# 작업중인 영상정보
-		self.org_img  = None  # 실제파일 영상 
-		self.canvas_img = None # Canvas출력 영상
+		# working image object
+		self.org_img  = None 
+		self.canvas_img = None 
 		self.org_img_width  = 0
 		self.org_img_height = 0
 		self.object_list = []
 		self.select_list = []
 
-		# Canvas 및 GUI 화면구성
+		# Canvas,  GUI Screen
 		self.canvas_img_width  = 1
 		self.canvas_img_height = 1
 		# CUI 
 		self.root = Tk()
-		self.root.title("VOC Editor")
-		#self.root.option_add('*Dialog.msg.width', 50)
+		self.root.title("Pascal VOC Data Editor")
 
-		# toolbar 변수
+		# toolbar var
 		self.curr_obj_name  = StringVar()
 		self.curr_file_name = StringVar()
 		self.is_show_label  = IntVar()
 		self.is_show_label.set(1)
-		# Tool bar 및 event 선언
+		# Tool bar , event define
 		toolbar = Frame(self.root, height=3)
 		toolbar.pack(side=TOP, anchor=NW)
-		self.label1 = Label(toolbar, text="O명")
+		self.label1 = Label(toolbar, text=OName)
 		self.label1.pack(side=LEFT)
 		self.entry1 = Entry(toolbar,    textvariable=self.curr_obj_name, bd=3, width=20)
 		self.entry1.pack(side=LEFT)
 		self.postion1 = Label(toolbar,  text="0000,0000", width=9)
 		self.postion1.pack(side=LEFT)
 
-		self.chk_show_label = Checkbutton(toolbar, text="O표시", variable=self.is_show_label, command=self.onShowLabel)
+		self.chk_show_label = Checkbutton(toolbar, text=OShow, variable=self.is_show_label, command=self.onShowLabel)
 		self.chk_show_label.pack(side=LEFT)
-		self.btn_search = Button(toolbar, text="O명검색", command=self.onSearch)
+		self.btn_search = Button(toolbar, text=OSearch, command=self.onSearch)
 		self.btn_search.pack(side=LEFT)
 		Label(toolbar, width=1).pack(side=LEFT)
 
-		self.btn_unselect = Button(toolbar, text="O선택취소", command=self.onUnSelectAll)
+		self.btn_unselect = Button(toolbar, text=OunSelect, command=self.onUnSelectAll)
 		self.btn_unselect.pack(side=LEFT)
 		self.root.bind('<Escape>', self.onUnSelectAll) 
-		self.btn_Update = Button(toolbar, text="O저장", command=self.onUpdate)
+		self.btn_Update = Button(toolbar, text=OSave, command=self.onUpdate)
 		self.btn_Update.pack(side=LEFT)
 		self.root.bind('<Control-s>', self.onUpdate) 
-		self.btn_erase = Button(toolbar, text="O지움", command=self.onErase)
+		self.btn_erase = Button(toolbar, text=OErase, command=self.onErase)
 		self.btn_erase.pack(side=LEFT)
 		self.root.bind('<Delete>', self.onErase) 
 
 		Label(toolbar, width=1).pack(side=LEFT)
 
-		self.label1 = Label(toolbar, text="파일명")
+		self.label1 = Label(toolbar, text=FName)
 		self.label1.pack(side=LEFT)
 		self.curr_fname = Entry(toolbar, textvariable=self.curr_file_name, bd=1, width=15)
 		self.curr_fname.pack(side=LEFT)
-		self.btn_read = Button(toolbar, text="읽기", command=self.onRead)
+		self.btn_read = Button(toolbar, text=FRead, command=self.onRead)
 		self.btn_read.pack(side=LEFT)
 		self.root.bind('<Control-r>', self.onRead) 
-		self.btn_save = Button(toolbar, text="저장", command=self.onSave)
+		self.btn_save = Button(toolbar, text=FWrite, command=self.onSave)
 		self.btn_save.pack(side=LEFT)
 		self.root.bind('<Control-u>', self.onSave) 
 		self.btn_prev = Button(toolbar, text="<<", command=self.onPrev)
@@ -134,39 +197,12 @@ class VocEditor:
 		self.root.bind('<Control-p>', self.onAuto) 
 		
 		self.loadXml()
+	
 	##############################################################################
-	# 키조작 조작 
-	##############################################################################
-	#def key(self, event):
-	#	print("pressed [{}]".format(repr(event.char)))
-		
-	##############################################################################
-	# 버튼 조작 
+	# Button event
 	##############################################################################
 	def onHelp(self, event=None):
-		messagebox.showinfo("Help", 
-			"<<객체선택 조작>>\n"
-			"전체선택    : Ctl-A \n"
-			"전체선택취소 : ESC\n"  
-			"선책추가  : 왼쪽마우스 더블클릭 \n"  
-			"선책취소  : 오른마우스 클릭 \n"  
-			"선택삭제     : Del     \n"
-			"Bean자동분석 : Ctrl-P  \n"
-			"\n"
-			"<<파일>>"
-			"파일 읽기 : Ctl-R      \n"
-			"파일 저장 : Ctl-U      \n"
-			"이전 파일 : PageUp     \n"
-			"다음 파일 : PageDown   \n"
-			"\n"
-			"<<객체생성>>\n"
-			"-Drag하여 객체영역선택\n"
-			"-객체명을 수정한후 저장 \n"
-			"\n"
-			"<<객체명 변경>>\n"
-			"-여러개 객체를 더블클릭\n"
-			"-객체명을 수정한 후 저장\n"
-		)
+		messagebox.showinfo("Help", help_text)
 
 	def onShowLabel(self):
 		log(2, 'onShowLabel')
@@ -181,7 +217,7 @@ class VocEditor:
 
 	def onSearch(self, event=None):
 		log(2, 'onSearch')
-		# 현재 선택삭제
+		
 		del_list = []
 		for obj in self.select_list:
 			if obj in self.select_list:
@@ -189,7 +225,7 @@ class VocEditor:
 		for o in del_list:
 			self.select_list.remove(o)
 
-		# 동일이름 검색
+		# search same name 
 		for obj in self.object_list:
 			if obj.name == self.curr_obj_name.get():
 				self.select_list.append(obj)
@@ -205,17 +241,14 @@ class VocEditor:
 		same_name = 'no'
 		if len(self.select_list) > 1:
 			same_name = messagebox.askquestion (
-					"확인", "총 {} 개의 선택 캑체의 명칭을 '{}'로 통일할까요 ?".format(nsel, self.toobarObjName()),
+					"confirm", configm_msg.format(nsel, self.toobarObjName()),
 					icon = 'warning')
-		
-		# 현재 선택 또는 만들어지는 Object을 list에 저장한다
 		for obj in self.select_list:
 			if same_name == 'yes' or obj.name == None or len(obj.name) == 0:
 				obj.name = self.toobarObjName()			
 
-			#임시 Object로 Update 대
 			if obj not in self.object_list:
-				# 기존 Select Object의 일부이면 Part로 등록 한다 
+				# New Object <  Select Object 
 				parent = self.findParentObjectInSelectList(obj)
 				obj.parent = parent
 				self.object_list.append(obj)
@@ -284,7 +317,7 @@ class VocEditor:
 		self.displayBox()
 
 	##############################################################################
-	# canvas 조작 
+	# canvas  event
 	##############################################################################
 	def onStart(self, event):
 		log(3, 'onStart')
@@ -294,7 +327,8 @@ class VocEditor:
 	def onGrow(self, event):
 		log(3, 'onGrow')
 		canvas = event.widget
-		# 그전 임시 Object 삭제
+
+		#  before draw object
 		del_list = []
 		for obj in self.select_list:
 			if obj not in self.object_list:
@@ -308,7 +342,7 @@ class VocEditor:
 				log(3, 'onGrow del={}/{}/{}'.format(obj.objectBox, obj.objectNm, obj.objectNmBg))
 		for o in del_list:
 			self.select_list.remove(o)
-		# 화면에 보이는 사각형 Object
+		# new draw object
 		objectBox, objectNm, objectNmBg = self.create_rectangle_tagged(self.toobarObjName(), 
 												self.start.x, self.start.y, event.x, event.y, thickness=1, color='blue')
 		self.postion1.config(text= "{},{}".format(event.x, event.y))
@@ -363,7 +397,7 @@ class VocEditor:
 		self.displayBox()
 
 	#############################################################################################
-	# 공통 펑션
+	# common function
 	#############################################################################################
 	def findParentObjectInSelectList(self, obj):
 		for parent in  self.select_list:
@@ -449,7 +483,7 @@ class VocEditor:
 			obj.objectNmBg = objectNmBg
 		log(2, 'displayBox() ok')
 
-	def create_rectangle_tagged(self, name, x1, y1, x2, y2, thickness=1, color='white'):
+	def create_rectangle_tagged(self, name, x1, y1, x2, y2, thickness=2, color='white'):
 		objectBox = objectNm = objectNmBg = None
 		if self.is_show_label.get() != 0:
 			objectNm   = self.canvas.create_text(x1, y1-12, text=name, fill='black')
@@ -462,15 +496,14 @@ class VocEditor:
 		#self.canvas.itemconfig(objectNmBg, tag=name)
 		return objectBox, objectNm, objectNmBg
 
-	def getMinMax(ctrs):
+	def getMinMax(self, ctrs):
 		r = Rect(9999, 9999, 0, 0)
 		for ctr in ctrs:
-			x, y, w, h = cv.boundingRect(ctr)
+			x, y, w, h = cv2.boundingRect(ctr)
 			r.x = min(r.x, x)
 			r.y = min(r.y, y)
 			r.w = max(r.w, w + x)
 			r.h = max(r.h, h + y)
-		#w, h를 절 때 위치에서 크기로 변경
 		return r.x, r.y, r.w, r.h
 	#############################################################################################
 	def saveVocXml(self, path_file_name, width, height, object_list):
@@ -561,13 +594,15 @@ class VocEditor:
 		img = numpy.array(p_img)
 		
 		object_list = []
-		bin = cv2.split(img)[pcond.color_no]
+		bin = cv2.split(img)[0]
 		
 		_retval, bin = cv2.threshold(bin, 110, 110, cv2.THRESH_BINARY)
 
 		bin, contours, _hierarchy = cv2.findContours(bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
 		cont_list = []
+		tot_size = 0
+		tot_cnt = 0
 		for contour in contours:
 			cont_len = cv2.arcLength(contour, True)
 			cont = cv2.approxPolyDP(contour, 0.001 * cont_len, True)
@@ -576,39 +611,44 @@ class VocEditor:
 			if cv2.contourArea(cont) > 800000:
 				continue
 			cont_list.append(cont)
-
 			if not cv2.isContourConvex(cont):
 				continue
 			elif 50000 < cv2.contourArea(cont):
 				continue
-			
+			tot_size += cv2.contourArea(cont)
+			tot_cnt += 1
+
+		avg_size = 50000
+		if tot_cnt != 0:
+			avg_size = tot_size/tot_cnt
+
 		for cont in cont_list:
 			c = (0, 0, 0)
-			# 너무작으면 노이즈로 본다
+			# noise 
 			if cv2.contourArea(cont) < 1000:
 				continue
 			elif not cv2.isContourConvex(cont):
-				c = (255, 0, 0)  # 제대로된 원인 아님
+				c = (255, 0, 0) 
 			elif avg_size * 3 > cv2.contourArea(cont):
-				c = (255, 0, 255)  # 노랑
+				c = (255, 0, 255)  #yellow
 			else:
 				c = (255, 0, 0)
-			xmin, ymin, xmax, ymax = Cstool.getMinMax(cont)
+			xmin, ymin, xmax, ymax = self.getMinMax(cont)
 			log(3, "parseImageInfo>{},{}-{},{}".format(xmin, ymin, xmax, ymax))
-			object_list.append(Obj('bean', xmin, ymin, xmax, ymax))
+			object_list.append(Obj('b', xmin, ymin, xmax, ymax))
 		log(2, 'parseImageInfo ok {}'.format(len(object_list)))
 		return len(img[0]), len(img), object_list
 
 if __name__ == '__main__':
 	if len(sys.argv) <= 1 :
-		print("python3  vocedit.py image_list")
+		print("python3  vocedit.py image_list -g")
 
 	flist = sys.argv[1:]
-	debug = 0
+	set_debug_level = 0
 	if len(sys.argv) >= 3 and sys.argv[len(sys.argv)-1].startswith("-g") and len(sys.argv[len(sys.argv)-1]) >= 2:
-		debug  = int(sys.argv[len(sys.argv)-1][2:])
+		set_debug_level  = int(sys.argv[len(sys.argv)-1][2:])
 		flist = flist[:-1]
-	set_debug_level= debug
+
 	log(1, flist)
 	VocEditor(flist)
 
