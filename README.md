@@ -9,7 +9,7 @@ The program file can be composed of one and can be easily rewritten by the devel
 After reading jpg, display object area and save.
 The xml file name is written as jpg name + '.xml'.
 
-![VOCEDIT](./image/voc.jpg)
+![VOCEDIT](./image/VOC.jpg)
 
 # Start the program
   python3 vocedit.py jpg_xml_file list

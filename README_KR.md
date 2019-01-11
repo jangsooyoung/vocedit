@@ -10,7 +10,7 @@ Simple VOC Pascal data 편집기
 jpg을 읽은후 object 영역을 표시한후 저장 합니다.
 xml 파일명은  jpg명 + '.xml'로 기록됩니다.
 
-![VOCEDIT](./image/voc.jpg)
+![VOCEDIT](./image/VOC.jpg)
 
 #프로그램 기동
   python3 vocedit.py  jpg_xml_file list 
