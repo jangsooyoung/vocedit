@@ -442,14 +442,20 @@ class VocEditor:
 		log(4, "{},{}".format(event.x, event.y))
 		x = event.x / self.canvas_img_width * self.org_img_width
 		y = event.y / self.canvas_img_height * self.org_img_height
+		finds = []
 		for obj in reversed(self.object_list):
 			if obj.xmin < x and x < obj.xmax and obj.ymin < y and y < obj.ymax:
-				return obj
+				finds.append(obj)
 		if include_temp:
 			for obj in self.select_list:
 				if obj.xmin < x and x < obj.xmax and obj.ymin < y and y < obj.ymax:
-					return obj
-		return None
+					finds.append(obj)
+
+		finds.sort(key=self.calcSize)
+		return finds[0]
+
+	def calcSize(self, obj):
+		return (obj.xmax - obj.xmin) * (obj.ymax - obj.ymin)
 
 	def loadFile(self):
 		log(2, 'loadFile start')
