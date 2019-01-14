@@ -13,11 +13,8 @@ xml 파일명은  jpg명 + '.xml'로 기록됩니다.<br>
 ![VOCEDIT](./image/VOC.jpg)<br>
 <br>
 #프로그램 기동<br>
-<br>
   python3 vocedit.py  jpg_xml_file list <br>
-<br>
   python3 vocedit_eng.py  jpg_xml_file list # 영문 Version<br>
-<br>
   - Argument가 최소 1개이상 jpg 파일 이있어야합니다.<br>
 <br>
 #객체생성<br>
