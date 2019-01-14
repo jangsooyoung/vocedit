@@ -12,69 +12,88 @@ from datetime import datetime
 
 set_debug_level = 0
 
-'''
-help_text = ("<<객체선택 조작>>\n"
+def init_k():
+	global help_text, configm_msg, OName, OShow, OSearch, OunSelect, OSave, OErase, FName, FRead, FWrite
+	help_text = ("<<객체선택 조작>>\n"
 			 "전체선택	: Ctl-A \n"
 			 "전체선택취소 : ESC\n"
 			 "선책추가  : 왼쪽마우스 더블클릭 \n"
 			 "선책취소  : 오른마우스 클릭 \n"
 			 "선택삭제	 : Del	 \n"
-			 "Bean자동분석 : Ctrl-P  \n"
+			 "자동분석 : Ctrl-P  \n"
+			 "객체명저장 : Enter  \n"
 			 "\n"
 			 "<<파일>>"
 			 "파일 읽기 : Ctl-R	  \n"
-			 "파일 저장 : Ctl-U	  \n"
+			 "파일 저장 : Ctl-S	  \n"
 			 "이전 파일 : PageUp	 \n"
 			 "다음 파일 : PageDown   \n"
 			 "\n"
 			 "<<객체생성>>\n"
 			 "-Drag하여 객체영역선택\n"
-			 "-객체명을 수정한후 저장 \n"
+			 "-객체명을 수정한후 저장[Enter]\n"
 			 "\n"
 			 "<<객체명 변경>>\n"
 			 "-여러개 객체를 더블클릭\n"
-			 "-객체명을 수정한 후 저장\n")
-configm_msg = "총 {} 개의 선택 캑체의 명칭을 {}로 통일할까요 ?"
-OName = "O명"
-OShow = "O보임"
-OSearch = "검색"
-OunSelect = "O선택취소"
-OSave = "O저장"
-OErase = "O지움"
-FName = "파일명"
-FRead = "읽기"
-FWrite = "저장"
-'''
-help_text =  ("<< Object manipulation >> \n"
-	"Select all  : Ctl-A \n"
-	"Unselect all: ESC \n"
-	"Add select obj : left mouse double click \n"
-	"cancel select obj: right click \n"
-	"Delete selected: Del \n"
-	"\n"
-	"<< File >>\n"
-	"Read File: Ctl-R \n"
-	"Save file: Ctl-U \n"
-	"Previous file: PageUp \n"
-	"Following file: PageDown \n"
-	"\n"
-	"<< Create Object >> \n"
-	" -Drag to select object region \n"
-	" - modify the object name and save it \n"
-	"\n"
-	"<< rename object >> \n"
-	" - double click on multiple objects \n"
-	" - modify the object name and save it\n")
-configm_msg = "Do you want to unify the names of the {} selection bodies with {}?"
-OName	 = "ObjectName"
-OShow	 = "ObjectShow"
-OSearch   = "Search"
-OunSelect = "Object unselect"
-OSave	 = "Object save"
-OErase	= "Object erase"
-FName	 = "File Name"
-FRead	 = "File Read"
-FWrite	= "File Write"
+			 "-객체명을 수정한 후 저장[Enter]\n"
+			 "\n"
+			 "<<객체명 이동>>\n"
+			 "-객체선택후 화살표\n"
+			 "<<객체명 크기변경>>\n"
+			 "-객체선택후 Cntl+화살표\n")
+
+	configm_msg = "총 {} 개의 선택 캑체의 명칭을 {}로 통일할까요 ?"
+	OName = "O명"
+	OShow = "O보임"
+	OSearch = "검색"
+	OunSelect = "O선택취소"
+	OSave = "O저장"
+	OErase = "O지움"
+	FName = "파일명"
+	FRead = "읽기"
+	FWrite = "저장"
+
+def init_e():
+	global help_text, configm_msg, OName, OShow, OSearch, OunSelect, OSave, OErase, FName, FRead, FWrite
+	help_text = ("<< Object selection operation >> \n"
+		"Select all: Ctl-A \n"
+		"Unselect all: ESC \n"
+		"Add measure: left mouse double click \n"
+		"Cancel the measure: right click \n"
+		"Delete selected: Del \n"
+		"automatic analysis: Ctrl-P \n"
+		"Save Object Name: Enter \n"
+		"\n"
+		"<< File >>"
+		"Read File: Ctl-R \n"
+		"Save file: Ctl-S \n"
+		"Previous file: PageUp \n"
+		"The following file: PageDown \n"
+		"\n"
+		"<< Create Object >> \n"
+		"-Drag to select object region \n"
+		"- modify the objectname and save it[Enter]\n"
+		"\n"
+		"<< rename object >> \n"
+		"- double click on multiple objects \n"
+		"- modify the objectname and save it[Enter]\n"
+		"\n"
+		"<< Move Object Name >> \n"
+		"- arrow to select object \n"
+		 "<< resize object name >> \n"
+		 "- Cntl + arrow after selecting object \n"
+		 )
+
+	configm_msg = "Do you want to unify the names of the {} selection bodies with {}?"
+	OName	 = "ObjectName"
+	OShow	 = "ObjectShow"
+	OSearch   = "Search"
+	OunSelect = "Object unselect"
+	OSave	 = "Object save"
+	OErase	= "Object erase"
+	FName	 = "File Name"
+	FRead	 = "File Read"
+	FWrite	= "File Write"
 
 
 def log(debug, s):
@@ -138,6 +157,7 @@ class VocEditor:
 
 		# toolbar var
 		self.curr_obj_name = StringVar()
+		self.curr_file_no = StringVar()
 		self.curr_file_name = StringVar()
 		self.is_show_label = IntVar()
 		self.is_show_label.set(1)
@@ -148,8 +168,9 @@ class VocEditor:
 		self.label1.pack(side=LEFT)
 		self.entry1 = Entry(toolbar, textvariable=self.curr_obj_name, bd=3, width=20)
 		self.entry1.pack(side=LEFT)
-		self.postion1 = Label(toolbar, text="0000,0000", width=9)
-		self.postion1.pack(side=LEFT)
+		self.btn_Update = Button(toolbar, text=OSave, command=self.onUpdate)
+		self.btn_Update.pack(side=LEFT)
+		self.root.bind('<Return>', self.onUpdate)
 
 		self.chk_show_label = Checkbutton(toolbar, text=OShow, variable=self.is_show_label, command=self.onShowLabel)
 		self.chk_show_label.pack(side=LEFT)
@@ -160,25 +181,25 @@ class VocEditor:
 		self.btn_unselect = Button(toolbar, text=OunSelect, command=self.onUnSelectAll)
 		self.btn_unselect.pack(side=LEFT)
 		self.root.bind('<Escape>', self.onUnSelectAll)
-		self.btn_Update = Button(toolbar, text=OSave, command=self.onUpdate)
-		self.btn_Update.pack(side=LEFT)
-		self.root.bind('<Control-s>', self.onUpdate)
 		self.btn_erase = Button(toolbar, text=OErase, command=self.onErase)
 		self.btn_erase.pack(side=LEFT)
 		self.root.bind('<Delete>', self.onErase)
 
 		Label(toolbar, width=1).pack(side=LEFT)
 
-		self.label1 = Label(toolbar, text=FName)
-		self.label1.pack(side=LEFT)
-		self.curr_fname = Entry(toolbar, textvariable=self.curr_file_name, bd=1, width=15)
+		self.label3 = Label(toolbar, text=FName)
+		self.label3.pack(side=LEFT)
+		self.curr_fname = Entry(toolbar, textvariable=self.curr_file_name, bd=1, width=20)
 		self.curr_fname.pack(side=LEFT)
+		self.curr_fno = Entry(toolbar, textvariable=self.curr_file_no, bd=1, width=3)
+		self.curr_fno.pack(side=LEFT)
+
 		self.btn_read = Button(toolbar, text=FRead, command=self.onRead)
 		self.btn_read.pack(side=LEFT)
 		self.root.bind('<Control-r>', self.onRead)
 		self.btn_save = Button(toolbar, text=FWrite, command=self.onSave)
 		self.btn_save.pack(side=LEFT)
-		self.root.bind('<Control-u>', self.onSave)
+		self.root.bind('<Control-s>', self.onSave)
 		self.btn_prev = Button(toolbar, text="<<", command=self.onPrev)
 		self.btn_prev.pack(side=LEFT)
 		self.root.bind('<Prior>', self.onPrev)
@@ -204,6 +225,15 @@ class VocEditor:
 		# self.root.bind("<Key>",self.key)
 		self.root.bind('<Control-a>', self.onSelectAll)
 		self.root.bind('<Control-p>', self.onAuto)
+		# object move
+		self.root.bind('<Up>', self.onUp)
+		self.root.bind('<Down>', self.onDown)
+		self.root.bind('<Left>', self.onLeft)
+		self.root.bind('<Right>', self.onRight)
+		self.root.bind('<Control-Up>', self.onCtrlUp)
+		self.root.bind('<Control-Left>', self.onCtrlLeft)
+		self.root.bind('<Control-Down>', self.onCtrlDown)
+		self.root.bind('<Control-Right>', self.onCtrlRight)
 
 		self.loadXml()
 
@@ -250,17 +280,16 @@ class VocEditor:
 		same_name = 'no'
 		if nsel > 1:
 			same_name = messagebox.askquestion("confirm", configm_msg.format(nsel, self.toobarObjName()), icon='warning')
-
+			if same_name != 'yes':
+				return
 		for obj in self.select_list:
-			#print("={}".format(same_name == 'yes' or nsel == 1))
-			if same_name == 'yes' or nsel == 1:
-				obj.name = self.toobarObjName()
-				#print(obj.name)
+			obj.name = self.toobarObjName()
 			if obj not in self.object_list:
 				# New Object <  Select Object
 				parent = self.findParentObjectInSelectList(obj)
 				obj.parent = parent
 				self.object_list.append(obj)
+		self.select_list.clear()
 		self.displayBox()
 		log(2, 'onUpdate add ok {}'.format(len(self.object_list)))
 		self.beep1()
@@ -331,13 +360,63 @@ class VocEditor:
 				self.select_list.append(obj)
 		self.displayBox()
 
+	def onUp(self, event=None):
+		for obj in self.select_list:
+			obj.ymin -= 1
+			obj.ymax -= 1
+		self.displayBox()
+
+	def onDown(self, event=None):
+		for obj in self.select_list:
+			obj.ymin += 1
+			obj.ymax += 1
+		self.displayBox()
+
+	def onLeft(self, event=None):
+		for obj in self.select_list:
+			obj.xmin -= 1
+			obj.xmax -= 1
+		self.displayBox()
+
+	def onRight(self, event=None):
+		for obj in self.select_list:
+			obj.xmin += 1
+			obj.xmax += 1
+		self.displayBox()
+
+
+	def onCtrlUp(self, event=None):
+		for obj in self.select_list:
+			obj.ymin -= 1
+			obj.ymax += 1
+		self.displayBox()
+
+	def onCtrlDown(self, event=None):
+		for obj in self.select_list:
+			if obj.ymin + 4 < obj.ymax:
+				obj.ymin += 1
+				obj.ymax -= 1
+		self.displayBox()
+
+	def onCtrlLeft(self, event=None):
+		for obj in self.select_list:
+			if obj.xmin + 4 < obj.xmax:
+				obj.xmin += 1
+				obj.xmax -= 1
+		self.displayBox()
+
+	def onCtrlRight(self, event=None):
+		for obj in self.select_list:
+			obj.xmin -= 1
+			obj.xmax += 1
+		self.displayBox()
+
 	##############################################################################
 	# canvas  event
 	##############################################################################
 	def onStart(self, event):
 		log(3, 'onStart')
 		self.start = event
-		self.postion1.config(text="{},{}".format(event.x, event.y))
 
 	def onGrow(self, event):
 		log(3, 'onGrow')
@@ -359,16 +438,16 @@ class VocEditor:
 			self.select_list.remove(o)
 		# new draw object
 		objectBox, objectNm, objectNmBg = self.create_rectangle_tagged(self.toobarObjName(),
-																	   self.start.x, self.start.y, event.x, event.y,
-																	   thickness=1, color='blue')
-		self.postion1.config(text="{},{}".format(event.x, event.y))
+										min(self.start.x, event.x), min(self.start.y, event.y),
+										max(self.start.x, event.x), max(self.start.y, event.y),
+										thickness=1, color='blue')
 		x = event.x / self.canvas_img_width * self.org_img_width
 		y = event.y / self.canvas_img_height * self.org_img_height
 		obj = Obj(None,
-				  self.start.x / self.canvas_img_width * self.org_img_width,
-				  self.start.y / self.canvas_img_height * self.org_img_height,
-				  event.x / self.canvas_img_width * self.org_img_width,
-				  event.y / self.canvas_img_height * self.org_img_height,
+				  min(self.start.x, event.x) / self.canvas_img_width * self.org_img_width,
+				  min(self.start.y, event.y) / self.canvas_img_height * self.org_img_height,
+				  max(self.start.x, event.x) / self.canvas_img_width * self.org_img_width,
+				  max(self.start.y, event.y) / self.canvas_img_height * self.org_img_height,
 				  objectBox=objectBox, objectNm=objectNm, objectNmBg=objectNmBg)
 		self.select_list.append(obj)
 		log(3,
@@ -387,7 +466,6 @@ class VocEditor:
 
 			# 현제 Object Name Update
 			self.curr_obj_name.set(obj.name)
-			self.postion1.config(text="{},{}-{},{}".format(obj.xmin, obj.ymin, obj.xmax, obj.ymax))
 
 	def onUnSelect1(self, event):
 		log(2, 'onUnSelect1')
@@ -401,7 +479,6 @@ class VocEditor:
 				self.select_list.remove(o)
 			log(4, "onSelected ..")
 			self.displayBox()
-			self.postion1.config(text="{},{}-{},{}".format(obj.xmin, obj.ymin, obj.xmax, obj.ymax))
 
 	def onUnSelectAll(self, event=None):
 		log(2, 'onUnSelectAll')
@@ -442,14 +519,21 @@ class VocEditor:
 		log(4, "{},{}".format(event.x, event.y))
 		x = event.x / self.canvas_img_width * self.org_img_width
 		y = event.y / self.canvas_img_height * self.org_img_height
+		finds = []
 		for obj in reversed(self.object_list):
 			if obj.xmin < x and x < obj.xmax and obj.ymin < y and y < obj.ymax:
-				return obj
+				finds.append(obj)
 		if include_temp:
 			for obj in self.select_list:
 				if obj.xmin < x and x < obj.xmax and obj.ymin < y and y < obj.ymax:
-					return obj
-		return None
+					finds.append(obj)
+		if len(finds) == 0:
+			return None
+		finds.sort(key=self.calcSize)
+		return finds[0]
+
+	def calcSize(self, obj):
+		return abs(obj.xmax - obj.xmin) * abs(obj.ymax - obj.ymin)
 
 	def loadFile(self):
 		log(2, 'loadFile start')
@@ -461,6 +545,7 @@ class VocEditor:
 	def loadXml(self):
 		log(2, 'loadXml start')
 		curr_img_fname = self.image_list[self.curr_image_index]
+		self.curr_file_no.set("{}".format(self.curr_image_index))
 		self.curr_file_name.set(self.image_list[self.curr_image_index])
 		self.loadVocXml(curr_img_fname.replace(".jpg", ""))
 		self.org_img_width, self.org_img_height, self.object_list = self.loadVocXml(curr_img_fname.replace(".jpg", ""))
@@ -667,6 +752,7 @@ class VocEditor:
 
 
 if __name__ == '__main__':
+	init_e()
 	if len(sys.argv) <= 1:
 		print("python3  vocedit.py image_list -g")
 
