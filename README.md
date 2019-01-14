@@ -15,7 +15,7 @@ The xml file name is written as jpg name + '.xml'.<br>
   python3 vocedit.py jpg_file list<br>
   python3 vocedit_eng.py jpg_file list # English Version<br>
   - Argument must have at least one jpg file.<br>
-  ex) python3 vocedit.py *.jpg
+  ex) python3 vocedit.py *.jpg<br>
 <br>
 # Create object<br>
  1. Select the object area by dragging<br>
