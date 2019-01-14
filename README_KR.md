@@ -16,6 +16,7 @@ xml 파일명은  jpg명 + '.xml'로 기록됩니다.<br>
   python3 vocedit.py  jpg_xml_file list <br>
   python3 vocedit_eng.py  jpg_xml_file list # 영문 Version<br>
   - Argument가 최소 1개이상 jpg 파일 이있어야합니다.<br>
+ 예) python3 vocedit.py *.jpg
 <br>
 #객체생성<br>
  1. Drag하여 객체 영역 선택<br>
