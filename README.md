@@ -1,43 +1,46 @@
-Simple VOC Pascal data editor
-============================
-
-Simple VOC Pascal Data Editor
-
-We configured it as a concise Source as possible
-The program file can be composed of one and can be easily rewritten by the developer.
-
-After reading jpg, display object area and save.
-The xml file name is written as jpg name + '.xml'.
-
-![VOCEDIT](./image/VOC.jpg)
-
-# Start the program
-  python3 vocedit.py jpg_xml_file list
-  python3 vocedit_eng.py jpg_xml_file list # English Version
-  - Argument must have at least one jpg file.
-
-# Create object
- 1. Select the object area by dragging
- 2. Edit the object name and save it.
-
-# Change object name
- 1. Double-click on multiple objects
- 2. Edit the object name and save it.
-
-# Create object part
- 1. Selecting Large Objects
- 2. Create an object by dragging the object contained in the big object
-
-# Object selection operation
-Select All: Ctl-A
-Deselect all: ESC
-Add selection: left mouse click
-Uncheck: Right mouse click
-Delete selected: Del
-Bean auto-analysis: Ctrl-P
-
-#file
-Read File: Ctl-R
-Save file: Ctl-U
-Previous file: PageUp
-Next file: PageDown
+Simple VOC Pascal data editor<br>
+============================<br>
+<br>
+Simple VOC Pascal Data Editor<br>
+<br>
+We configured it as a concise Source as possible<br>
+The program file can be composed of one and can be easily rewritten by the developer.<br>
+<br>
+After reading jpg, display object area and save.<br>
+The xml file name is written as jpg name + '.xml'.<br>
+<br>
+![VOCEDIT](./image/VOC.jpg)<br>
+<br>
+# Start the program<br>
+<br>
+  python3 vocedit.py jpg_xml_file list<br>
+<br>
+  python3 vocedit_eng.py jpg_xml_file list # English Version<br>
+<br>
+  - Argument must have at least one jpg file.<br>
+<br>
+# Create object<br>
+ 1. Select the object area by dragging<br>
+ 2. Edit the object name and save it.<br>
+<br>
+# Change object name<br>
+ 1. Double-click on multiple objects<br>
+ 2. Edit the object name and save it.<br>
+<br>
+# Create object part<br>
+ 1. Selecting Large Objects<br>
+ 2. Create an object by dragging the object contained in the big object<br>
+<br>
+# Object selection operation<br>
+Select All: Ctl-A<br>
+Deselect all: ESC<br>
+Add selection: left mouse click<br>
+Uncheck: Right mouse click<br>
+Delete selected: Del<br>
+Bean auto-analysis: Ctrl-P<br>
+<br>
+#file<br>
+Read File: Ctl-R<br>
+Save file: Ctl-U<br>
+Previous file: PageUp<br>
+Next file: PageDown<br>
