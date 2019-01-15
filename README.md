@@ -6,7 +6,7 @@ The program file can be configured as a single file so that developers can easil
 After reading jpg, display object area and save. <br>
 The xml filename is written as jpg name + '.xml'. <br>
 <br>
-! [VOCEDIT] (./image/VOC.jpg) <br>
+![VOCEDIT](./image/VOC.jpg) <br>
 <br>
 # Program Manipulation <br>
   python3 vocedit.py jpg_xml_file list <br>
