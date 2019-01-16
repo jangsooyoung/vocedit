@@ -9,6 +9,7 @@ import cv2
 import numpy
 import time
 from datetime import datetime
+import sys
 
 set_debug_level = 0
 
@@ -754,7 +755,8 @@ class VocEditor:
 if __name__ == '__main__':
 	init_k()
 	if len(sys.argv) <= 1:
-		print("python3  vocedit.py image_list -g")
+		print("python3  vocedit.py image_list [-g1] ")
+		sys.exit(-1)
 
 	flist = sys.argv[1:]
 	set_debug_level = 0
