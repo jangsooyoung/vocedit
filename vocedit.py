@@ -506,7 +506,7 @@ class VocEditor:
 		name = self.curr_obj_name.get()
 		if name == None or len(name) == 0:
 			name = '?'
-		return name
+		return name.strip()
 
 	def getPartList(self, obj):
 		part_list = []
