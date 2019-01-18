@@ -43,7 +43,7 @@ def init_k():
 			 "<<객체명 크기변경>>\n"
 			 "-객체선택후 Cntl+화살표\n")
 
-	configm_msg = "총 {} 개의 선택 캑체의 명칭을 {}로 통일할까요 ?"
+	configm_msg = "총 {} 개의 선택 캑체의 명칭 및 (diffcult, truncated) 을 {}({},{}) 로 통일할까요 ?"
 	OName = "O명"
 	OShow = "O보임"
 	OSearch = "검색"
@@ -85,16 +85,16 @@ def init_e():
 		 "- Cntl + arrow after selecting object \n"
 		 )
 
-	configm_msg = "Do you want to unify the names of the {} selection bodies with {}?"
-	OName	 = "ObjectName"
-	OShow	 = "ObjectShow"
+	configm_msg = "Do you want to unify the names (diffcult, truncated) of the {}({},{}) selection bodies with {}?"
+	OName	 = "ObjName"
+	OShow	 = "ObjShow"
 	OSearch   = "Search"
-	OunSelect = "Object unselect"
-	OSave	 = "Object save"
-	OErase	= "Object erase"
-	FName	 = "File Name"
-	FRead	 = "File Read"
-	FWrite	= "File Write"
+	OunSelect = "ObjUnselect"
+	OSave	 = "ObjSave"
+	OErase	= "ObjErase"
+	FName	 = "FileName"
+	FRead	 = "FileRead"
+	FWrite	= "FileWrite"
 
 
 def log(debug, s):
@@ -162,6 +162,11 @@ class VocEditor:
 		self.curr_file_name = StringVar()
 		self.is_show_label = IntVar()
 		self.is_show_label.set(1)
+		self.is_difficult = IntVar()
+		self.is_difficult.set(0)
+		self.is_truncated = IntVar()
+		self.is_truncated.set(0)
+
 		# Tool bar , event define
 		toolbar = Frame(self.root, height=3)
 		toolbar.pack(side=TOP, anchor=NW)
@@ -169,6 +174,11 @@ class VocEditor:
 		self.label1.pack(side=LEFT)
 		self.entry1 = Entry(toolbar, textvariable=self.curr_obj_name, bd=3, width=20)
 		self.entry1.pack(side=LEFT)
+		self.chk_difficult = Checkbutton(toolbar, text="di.", variable=self.is_difficult, command=self.ondifficult)
+		self.chk_difficult.pack(side=LEFT)
+		self.chk_truncated = Checkbutton(toolbar, text="tr.", variable=self.is_truncated, command=self.onTruncated)
+		self.chk_truncated.pack(side=LEFT)
+		Label(toolbar, width=1).pack(side=LEFT)
 		self.btn_Update = Button(toolbar, text=OSave, command=self.onUpdate)
 		self.btn_Update.pack(side=LEFT)
 		self.root.bind('<Return>', self.onUpdate)
@@ -244,6 +254,12 @@ class VocEditor:
 	def onHelp(self, event=None):
 		messagebox.showinfo("Help", help_text)
 
+	def ondifficult(self):
+		pass
+
+	def onTruncated(self):
+		pass
+
 	def onShowLabel(self):
 		log(2, 'onShowLabel')
 		self.displayBox()
@@ -280,11 +296,14 @@ class VocEditor:
 
 		same_name = 'no'
 		if nsel > 1:
-			same_name = messagebox.askquestion("confirm", configm_msg.format(nsel, self.toobarObjName()), icon='warning')
+			same_name = messagebox.askquestion("confirm", 
+				configm_msg.format(nsel, self.toobarObjName(), self.is_difficult.get(), self.is_truncated.get()), icon='warning')
 			if same_name != 'yes':
 				return
 		for obj in self.select_list:
 			obj.name = self.toobarObjName()
+			obj.difficult = self.is_difficult.get()
+			obj.truncated = self.is_truncated.get()
 			if obj not in self.object_list:
 				# New Object <  Select Object
 				parent = self.findParentObjectInSelectList(obj)
@@ -297,13 +316,16 @@ class VocEditor:
 
 	def onErase(self, event=None):
 		log(2, 'onErase {}'.format(len(self.select_list)))
-		if len(self.select_list) == 0:
-			return
+
 		del_list = []
-		for obj in self.select_list:
-			del_list.append(obj)
-			for part in self.getPartList(obj):
-				del_list.append(part)
+		if len(self.select_list) == 1 and self.select_list[0] not in self.object_list:
+			r = self.select_list[0]
+			del_list = self.findObjByRect(r.xmin, r.ymin, r.xmax, r.ymax)
+		else:
+			for obj in self.select_list:
+				del_list.append(obj)
+				for part in self.getPartList(obj):
+					del_list.append(part)
 
 		for o in del_list:
 			if o.objectBox != None:
@@ -462,12 +484,13 @@ class VocEditor:
 		if obj != None:
 			if obj not in self.select_list:
 				self.select_list.append(obj)
-			log(4, "onSelected ..")
-			self.displayBox()
-
 			# 현제 Object Name Update
 			self.curr_obj_name.set(obj.name)
-
+			self.is_difficult.set(obj.difficult)
+			self.is_truncated.set(obj.truncated)
+			log(4, "onSelected ..")
+			self.displayBox()
+			
 	def onUnSelect1(self, event):
 		log(2, 'onUnSelect1')
 
@@ -514,6 +537,13 @@ class VocEditor:
 			if o.parent == obj:
 				part_list.append(o)
 		return part_list
+
+	def findObjByRect(self, xmin, ymin, xmax, ymax):
+		finds = []
+		for obj in self.object_list:
+			if xmin <= obj.xmin and obj.xmax <= xmax and ymin <= obj.ymin and obj.ymax <= ymax:
+				finds.append(obj)
+		return finds
 
 	def findObj(self, event, include_temp=False):
 		log(4, "len(self.object_list)=>{}".format(len(self.object_list)))
@@ -684,8 +714,8 @@ class VocEditor:
 		# Find annotations.
 		for xml_obj in root.findall('object'):
 			label = xml_obj.find('name').text
-			difficult_val = xml_obj.find('difficult').text
-			truncated_val = xml_obj.find('truncated').text
+			difficult_val = int(xml_obj.find('difficult').text)
+			truncated_val = int(xml_obj.find('truncated').text)
 			bbox = xml_obj.find('bndbox')
 			obj = Obj(label, float(bbox.find('xmin').text), float(bbox.find('ymin').text),
 					  float(bbox.find('xmax').text), float(bbox.find('ymax').text),
