@@ -185,6 +185,7 @@ class VocEditor:
 
 		self.chk_show_label = Checkbutton(toolbar, text=OShow, variable=self.is_show_label, command=self.onShowLabel)
 		self.chk_show_label.pack(side=LEFT)
+
 		self.btn_search = Button(toolbar, text=OSearch, command=self.onSearch)
 		self.btn_search.pack(side=LEFT)
 		Label(toolbar, width=1).pack(side=LEFT)
@@ -296,7 +297,7 @@ class VocEditor:
 
 		same_name = 'no'
 		if nsel > 1:
-			same_name = messagebox.askquestion("confirm", 
+			same_name = messagebox.askquestion("confirm",
 				configm_msg.format(nsel, self.toobarObjName(), self.is_difficult.get(), self.is_truncated.get()), icon='warning')
 			if same_name != 'yes':
 				return
@@ -490,7 +491,7 @@ class VocEditor:
 			self.is_truncated.set(obj.truncated)
 			log(4, "onSelected ..")
 			self.displayBox()
-			
+
 	def onUnSelect1(self, event):
 		log(2, 'onUnSelect1')
 
@@ -587,12 +588,13 @@ class VocEditor:
 		self.select_list.clear()
 
 		curr_img_fname = self.image_list[self.curr_image_index]
-		self.org_img = Image.open(curr_img_fname)
-		self.canvas_img = self.org_img.resize((self.canvas_img_width, self.canvas_img_height))
-		self.photo = ImageTk.PhotoImage(self.canvas_img)
-		self.canvas.create_image(0, 0, anchor=NW, image=self.photo)
-		self.canvas.image = self.photo
-		log(2, 'loadImage ok')
+		if os.path.isfile(curr_img_fname):
+			self.org_img = Image.open(curr_img_fname)
+			self.canvas_img = self.org_img.resize((self.canvas_img_width, self.canvas_img_height))
+			self.photo = ImageTk.PhotoImage(self.canvas_img)
+			self.canvas.create_image(0, 0, anchor=NW, image=self.photo)
+			self.canvas.image = self.photo
+			log(2, 'loadImage ok')
 
 	def displayBox(self):
 		log(2, 'displayBox()')
@@ -602,7 +604,7 @@ class VocEditor:
 			thickness = 1
 			color = 'white'
 			if obj in self.select_list:
-				thickness = 3
+				thickness = 4
 			if obj.parent != None:
 				color = 'light gray'
 			objectBox, objectNm, objectNmBg = self.create_rectangle_tagged(
@@ -623,7 +625,15 @@ class VocEditor:
 			objectNm = self.canvas.create_text(x1, y1 - 12, text=name, fill='black')
 			objectNmBg = self.canvas.create_rectangle(self.canvas.bbox(objectNm), fill=color)
 			self.canvas.tag_lower(objectNmBg, objectNm)
-		objectBox = self.canvas.create_rectangle(x1, y1, x2, y2, width=thickness)
+		lcolor ='yellow'
+		if name == 'a': lcolor='white'
+		if name == 'b': lcolor='light gray'
+		if name == 'c': lcolor='yellow'
+		if name == 'd': lcolor='orange'
+		if name == 'e': lcolor='purple'
+		if name == 'f': lcolor='red'
+		if name == 'x': lcolor='black'
+		objectBox = self.canvas.create_rectangle(x1, y1, x2, y2, width=thickness, outline=lcolor)
 
 		# self.canvas.itemconfig(objectBox, tag=name)
 		# self.canvas.itemconfig(objectNm,  tag=name)
@@ -738,6 +748,7 @@ class VocEditor:
 		object_list = []
 		bin = cv2.split(img)[0]
 
+		#_retval, bin = cv2.threshold(bin, 110, 110, cv2.THRESH_BINARY)
 		_retval, bin = cv2.threshold(bin, 110, 110, cv2.THRESH_BINARY)
 
 		bin, contours, _hierarchy = cv2.findContours(bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -798,5 +809,3 @@ if __name__ == '__main__':
 	VocEditor(flist)
 
 	mainloop()
-
-
