@@ -37,7 +37,7 @@ class Obj:
 		self.parent = parent
 
 
-class VocEditor:
+class VocSplit:
 	def __init__(self):
 		self.object_list = []
 
@@ -108,13 +108,23 @@ class VocEditor:
 		fname1 = self.filenameonly(fname).replace(".jpg", "")
 		for o in self.object_list:
 			sub_img = self.subImageByRect(img, o)
-			#Cstool.imshow(0, o.name, sub_img, x=0, y=0 , is_wait=True)
-			sub_fname = "{}/{}/{}_{}_{}.jpg".format(dest_dir, o.name, fname1, int(o.xmin), int(o.ymin))
+			sub_dir = "{}/{}".format(dest_dir, o.name)
+			self.mkdir(sub_dir)
+			sub_fname = "{}/{}_{}_{}.jpg".format(sub_dir,fname1, int(o.xmin), int(o.ymin))
+			log(1, sub_fname)
 			cv2.imwrite(sub_fname, sub_img)
 
+	def mkdir(self, dir):
+		try:
+			os.stat(dir)
+		except:
+			os.mkdir(dir)  
+
 if __name__ == '__main__':
+
 	if len(sys.argv) <= 2:
-		print("python3  vocedit.py dest_dir image_list [-g1]")
+		print("python3  vocedit.py dest_dir image_list  -g1")
+		sys.exit(1)
 
 	dest_dir = sys.argv[1]
 	flist = sys.argv[2:]
@@ -123,6 +133,6 @@ if __name__ == '__main__':
 		set_debug_level = int(sys.argv[len(sys.argv) - 1][2:])
 		flist = flist[:-1]
 	log(1, flist)
-	voc = VocEditor()
+	voc = VocSplit()
 	for fname in flist:
 		voc.split(fname, dest_dir)
