@@ -46,3 +46,19 @@ xml 파일명은  jpg명 + '.xml'로 기록됩니다.<br>
 	파일 저장 : Ctl-U      <br>
 	이전 파일 : PageUp     <br>
 	다음 파일 : PageDown   <br>
+<br>
+# Image 분할후 객체명  정리하기 <br>
+  객체명 분류가 잘되었는지 검증하는 방법 <br>
+<br>
+ 1. python3 vocsplit.py dest_dir img_List<br>
+    img_list에 있는 voc xml읙 객체를 객체명으로된 sub directory별로 분류하여 저장한다.<br>
+<br>
+ 2.  dest_dir에 생성됨 이미지를 재배치 한다<br>
+     이대 "del"이라는 sub_directory로 옴겨진 객체 image는 객체 삭제 대상이다 <br>
+     생성된 객체 파일명을 수정하면 안된다 <br>
+     파일명을 수정하면 XML을 수정할수 있다 <br>
+<br>
+ 3. python3 vocrenameobk.py dest_dir img_List<br>
+    vocsplit.py로  dest_dir 별로 분할된 Image목록을 읽어 XML의 객체명을 수정한다.<br>
+
+

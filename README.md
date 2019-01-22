@@ -43,3 +43,17 @@ The xml filename is written as jpg name + '.xml'. <br>
     Save file: Ctl-U <br>
     Old file: PageUp <br>
     Next file: PageDown <br>
+<br>
+# Image to organize objects after splitting <br>
+  How to verify that object name classification works well <br>
+ <br>
+ 1. python3 vocsplit.py dest_dir img_List <br>
+    The voc xml object in img_list is classified and stored by subdirectories with object names. <br>
+ <br>
+ 2. created in dest_dir relocates the image <br>
+     The image object, which is called the subdirectory "del", is the object to delete <br>
+     Do not modify the generated object file name <br>
+     You can modify the XML by modifying the file name <br>
+ <br>
+ 3. python3 vocrenameobk.py dest_dir img_List <br>
+    Modify the object name of the XML by reading the list of images divided by dest_dir in vocsplit.py. <br>
