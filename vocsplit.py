@@ -10,7 +10,6 @@ import numpy
 import time
 from datetime import datetime
 import ntpath
-import Cstool
 
 set_debug_level = 0
 
@@ -123,7 +122,7 @@ class VocSplit:
 if __name__ == '__main__':
 
 	if len(sys.argv) <= 2:
-		print("python3  vocedit.py dest_dir image_list  -g1")
+		print("python3 vocsplit.py dest_dir image_list [-g1]")
 		sys.exit(1)
 
 	dest_dir = sys.argv[1]
