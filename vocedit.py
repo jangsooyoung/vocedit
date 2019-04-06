@@ -1,6 +1,8 @@
+
 import simpleguitk
 from tkinter import *
 from tkinter import messagebox
+from tkinter import filedialog
 import time
 from PIL import ImageTk, Image
 import xml.etree.ElementTree as xml_tree
@@ -10,6 +12,7 @@ import numpy
 import time
 from datetime import datetime
 import sys
+
 
 set_debug_level = 0
 
@@ -118,7 +121,8 @@ class Obj:
 		self.objectNm = objectNm
 		self.objectNmBg = objectNmBg
 		self.parent = parent
-
+	def __str__(self):
+		return "<{}<{},{} ~ {},{}>_".format(self.name, self.xmin, self.ymin, self.xmax, self.ymax)
 
 class Rect:
 	def __init__(self, x, y, w, h):
@@ -137,6 +141,11 @@ class Rect:
 
 class VocEditor:
 	def __init__(self, image_list):
+		self.init_image(image_list)
+		self.init_screen()
+		self.loadXml()
+
+	def init_image(self, image_list):
 		# image
 		self.image_list = image_list
 		self.curr_image_index = 0
@@ -152,6 +161,8 @@ class VocEditor:
 		# Canvas,  GUI Screen
 		self.canvas_img_width = 1
 		self.canvas_img_height = 1
+
+	def init_screen(self):
 		# CUI
 		self.root = Tk()
 		self.root.title("Pascal VOC Data Editor")
@@ -170,6 +181,32 @@ class VocEditor:
 		# Tool bar , event define
 		toolbar = Frame(self.root, height=3)
 		toolbar.pack(side=TOP, anchor=NW)
+		
+		self.btn_flist = Button(toolbar, text="File", command=self.onFlist)
+		self.btn_flist.pack(side=LEFT)
+		self.root.bind('<Control-O>', self.onFlist)
+		
+		self.label3 = Label(toolbar, text=FName)
+		self.label3.pack(side=LEFT)
+		self.curr_fname = Entry(toolbar, textvariable=self.curr_file_name, bd=1, width=20)
+		self.curr_fname.pack(side=LEFT)
+		self.curr_fno = Entry(toolbar, textvariable=self.curr_file_no, bd=1, width=3)
+		self.curr_fno.pack(side=LEFT)
+
+		self.btn_read = Button(toolbar, text=FRead, command=self.onRead)
+		self.btn_read.pack(side=LEFT)
+		self.root.bind('<Control-r>', self.onRead)
+		self.btn_save = Button(toolbar, text=FWrite, command=self.onSave)
+		self.btn_save.pack(side=LEFT)
+		self.root.bind('<Control-s>', self.onSave)
+		self.btn_prev = Button(toolbar, text="<<", command=self.onPrev)
+		self.btn_prev.pack(side=LEFT)
+		self.root.bind('<Prior>', self.onPrev)
+		self.btn_next = Button(toolbar, text=">>", command=self.onNext)
+		self.btn_next.pack(side=LEFT)
+		self.root.bind('<Next>', self.onNext)
+
+		Label(toolbar, width=1).pack(side=LEFT)
 		self.label1 = Label(toolbar, text=OName)
 		self.label1.pack(side=LEFT)
 		self.entry1 = Entry(toolbar, textvariable=self.curr_obj_name, bd=3, width=20)
@@ -199,31 +236,11 @@ class VocEditor:
 
 		Label(toolbar, width=1).pack(side=LEFT)
 
-		self.label3 = Label(toolbar, text=FName)
-		self.label3.pack(side=LEFT)
-		self.curr_fname = Entry(toolbar, textvariable=self.curr_file_name, bd=1, width=20)
-		self.curr_fname.pack(side=LEFT)
-		self.curr_fno = Entry(toolbar, textvariable=self.curr_file_no, bd=1, width=3)
-		self.curr_fno.pack(side=LEFT)
-
-		self.btn_read = Button(toolbar, text=FRead, command=self.onRead)
-		self.btn_read.pack(side=LEFT)
-		self.root.bind('<Control-r>', self.onRead)
-		self.btn_save = Button(toolbar, text=FWrite, command=self.onSave)
-		self.btn_save.pack(side=LEFT)
-		self.root.bind('<Control-s>', self.onSave)
-		self.btn_prev = Button(toolbar, text="<<", command=self.onPrev)
-		self.btn_prev.pack(side=LEFT)
-		self.root.bind('<Prior>', self.onPrev)
-		self.btn_next = Button(toolbar, text=">>", command=self.onNext)
-		self.btn_next.pack(side=LEFT)
-		self.root.bind('<Next>', self.onNext)
-
-		Label(toolbar, width=1).pack(side=LEFT)
-
+		
 		self.btn_next = Button(toolbar, text="Help", command=self.onHelp)
 		self.btn_next.pack(side=LEFT)
 		self.root.bind('<Control-h>', self.onHelp)
+
 
 		# image mouse event
 		self.canvas = Canvas(self.root, width=800, height=600)
@@ -247,11 +264,19 @@ class VocEditor:
 		self.root.bind('<Control-Down>', self.onCtrlDown)
 		self.root.bind('<Control-Right>', self.onCtrlRight)
 
-		self.loadXml()
 
 	##############################################################################
 	# Button event
 	##############################################################################
+	def onFlist(self, event=None):
+		log(2, 'onNext')
+		filez = filedialog.askopenfilenames(parent=self.root,title='Choose a file')
+		filez = [file for file in filez if file.endswith('.jpg')]
+		if len(filez) > 0:
+			self.image_list = filez
+			self.curr_image_index = 0
+			self.loadFile()
+
 	def onHelp(self, event=None):
 		messagebox.showinfo("Help", help_text)
 
@@ -266,7 +291,7 @@ class VocEditor:
 		self.displayBox()
 
 	def onResize(self, event):
-		log(2, 'onResize')
+		log(1, 'onResize ({}, {})'.format(self.canvas_img_width, self.canvas_img_height))
 		self.canvas_img_width = event.width - 2
 		self.canvas_img_height = event.height - 2
 		self.loadImage()
@@ -282,6 +307,7 @@ class VocEditor:
 		for o in del_list:
 			self.select_list.remove(o)
 
+
 		# search same name
 		for obj in self.object_list:
 			if obj.name == self.curr_obj_name.get():
@@ -290,7 +316,7 @@ class VocEditor:
 		self.displayBox()
 
 	def onUpdate(self, is_same_name=False):
-		log(2, 'onUpdate {} {}'.format(is_same_name, len(self.select_list)))
+		log(1, 'onUpdate {} {}'.format(is_same_name, len(self.select_list)))
 		nsel = len(self.select_list)
 		if nsel == 0:
 			return
@@ -310,9 +336,10 @@ class VocEditor:
 				parent = self.findParentObjectInSelectList(obj)
 				obj.parent = parent
 				self.object_list.append(obj)
+				log(1, 'object_list.append({}'.format(obj))
 		self.select_list.clear()
 		self.displayBox()
-		log(2, 'onUpdate add ok {}'.format(len(self.object_list)))
+		log(1, 'onUpdate add ok {}'.format(len(self.object_list)))
 		self.beep1()
 
 	def onErase(self, event=None):
@@ -354,7 +381,7 @@ class VocEditor:
 		self.beep1()
 
 	def onSave(self, event=None):
-		log(2, 'onSave')
+		log(1, 'onSave nobj={}'.format(len(self.object_list)))
 		self.saveVocXml(self.image_list[self.curr_image_index], self.org_img_width, self.org_img_height,
 						self.object_list)
 		self.beep1()
@@ -367,7 +394,7 @@ class VocEditor:
 			self.loadFile()
 		# self.btn_prev.config(state=NORMAL)
 		self.beep1()
-
+		
 	def onNext(self, event=None):
 		log(2, 'onNext')
 		if self.curr_image_index + 1 < len(self.image_list):
@@ -376,6 +403,7 @@ class VocEditor:
 			self.loadFile()
 		# self.btn_next.config(state=NORMAL)
 		self.beep1()
+
 
 	def onSelectAll(self, event):
 		log(2, 'onSelectAll')
@@ -576,17 +604,19 @@ class VocEditor:
 
 	def loadXml(self):
 		log(2, 'loadXml start')
+		#if self.curr_image_index <= len(self.image_list):
 		curr_img_fname = self.image_list[self.curr_image_index]
 		self.curr_file_no.set("{}".format(self.curr_image_index))
 		self.curr_file_name.set(self.image_list[self.curr_image_index])
 		self.loadVocXml(curr_img_fname.replace(".jpg", ""))
 		self.org_img_width, self.org_img_height, self.object_list = self.loadVocXml(curr_img_fname.replace(".jpg", ""))
-		log(2, 'loadXml ok  {}'.format(len(self.object_list)))
+		log(2, 'loadXml ok self.object_list= {}, org_img_width={}'.format(len(self.object_list), self.org_img_width))
 
 	def loadImage(self):
 		log(2, 'loadImage start')
 		self.select_list.clear()
-
+		
+		#if self.curr_image_index < len(self.image_list):
 		curr_img_fname = self.image_list[self.curr_image_index]
 		if os.path.isfile(curr_img_fname):
 			self.org_img = Image.open(curr_img_fname)
@@ -597,7 +627,6 @@ class VocEditor:
 			log(2, 'loadImage ok')
 
 	def displayBox(self):
-		log(2, 'displayBox()')
 		self.canvas.delete(ALL)
 		self.canvas.create_image(0, 0, anchor=NW, image=self.photo)
 		for obj in self.object_list:
@@ -607,6 +636,8 @@ class VocEditor:
 				thickness = 4
 			if obj.parent != None:
 				color = 'light gray'
+			#log(1, 'displayBox() {}/{} '.format(self.org_img_width,self.canvas_img_width ))
+
 			objectBox, objectNm, objectNmBg = self.create_rectangle_tagged(
 				obj.name,
 				obj.xmin / self.org_img_width * self.canvas_img_width,
@@ -651,12 +682,15 @@ class VocEditor:
 		return r.x, r.y, r.w, r.h
 
 	def beep1(self, s1=1):
-		print('\a', end='')
-		sys.stdout.flush()
+		None
+		#print(ws.Beep(2000, 1000))
+		#print('\a', end='')
+		#sys.stdout.flush()
 		#from pygame import mixer  # Load the required library
 		#mixer.init()
 		#mixer.music.load('mp3/sound{}.mp3'.format(s1))
 		#mixer.music.play()
+
 	#############################################################################################
 	def saveVocXml(self, path_file_name, width, height, object_list):
 		log(2, 'saveVocXml()')
@@ -677,29 +711,31 @@ class VocEditor:
 		xml.append("	</size>")
 		xml.append("	<segmented>0</segmented>")
 
+		log(1, "saveVocXml={}".format(len(object_list)))
 		for obj in object_list:
 			if obj.parent != None:
 				continue
+			log(1, "obj={}".format(obj))
 			xml.append("	<object>")
 			xml.append("		<name>{}</name>".format(obj.name))
 			xml.append("		<pose>Unspecified</pose>")
 			xml.append("		<truncated>{}</truncated>".format(obj.truncated))
 			xml.append("		<difficult>{}</difficult>".format(obj.difficult))
 			xml.append("		<bndbox>")
-			xml.append("			<xmin>{}</xmin>".format(int(obj.xmin)))
-			xml.append("			<ymin>{}</ymin>".format(int(obj.ymin)))
-			xml.append("			<xmax>{}</xmax>".format(int(obj.xmax)))
-			xml.append("			<ymax>{}</ymax>".format(int(obj.ymax)))
+			xml.append("			<xmin>{}</xmin>".format((obj.xmin)))
+			xml.append("			<ymin>{}</ymin>".format((obj.ymin)))
+			xml.append("			<xmax>{}</xmax>".format((obj.xmax)))
+			xml.append("			<ymax>{}</ymax>".format((obj.ymax)))
 			xml.append("		</bndbox>")
 			part_list = self.getPartList(obj)
 			for sobj in part_list:
 				xml.append("		<part>")
 				xml.append("			<name>{}</name>".format(sobj.name))
 				xml.append("			<bndbox>")
-				xml.append("				<xmin>{}</xmin>".format(int(sobj.xmin)))
-				xml.append("				<ymin>{}</ymin>".format(int(sobj.ymin)))
-				xml.append("				<xmax>{}</xmax>".format(int(sobj.xmax)))
-				xml.append("				<ymax>{}</ymax>".format(int(sobj.ymax)))
+				xml.append("				<xmin>{}</xmin>".format((sobj.xmin)))
+				xml.append("				<ymin>{}</ymin>".format((sobj.ymin)))
+				xml.append("				<xmax>{}</xmax>".format((sobj.xmax)))
+				xml.append("				<ymax>{}</ymax>".format((sobj.ymax)))
 				xml.append("			</bndbox>")
 				xml.append("		</part>")
 			xml.append("	</object>")
@@ -712,9 +748,9 @@ class VocEditor:
 
 	def loadVocXml(self, file_name):
 		if not os.path.isfile(file_name + ".xml"):
-			return 0, 0, []
+			return 1, 1, []
 
-		log(2, 'loadVocXml({})'.format(file_name + ".xml"))
+		log(2, 'loadVocXml ({})'.format(file_name + ".xml"))
 		object_list = []
 		tree = xml_tree.parse(file_name + ".xml")
 		root = tree.getroot()
@@ -739,6 +775,7 @@ class VocEditor:
 							parent=obj)
 				object_list.append(p_obj)
 
+		log(2, object_list)
 		return int(size.find('width').text), int(size.find('height').text), object_list
 
 	def parseImageInfo(self, p_img):
@@ -795,15 +832,19 @@ class VocEditor:
 
 if __name__ == '__main__':
 	init_k()
-	if len(sys.argv) <= 1:
-		print("python3  vocedit.py image_list [-g1] ")
-		sys.exit(-1)
 
 	flist = sys.argv[1:]
+
 	set_debug_level = 0
-	if len(sys.argv) >= 3 and sys.argv[len(sys.argv) - 1].startswith("-g") and len(sys.argv[len(sys.argv) - 1]) >= 2:
+	if len(flist) <= 0 :
+		flist = [ "default.jpg" ]
+	elif len(flist) == 1 and sys.argv[1].startswith("-g"):
+		flist = [ "default.jpg" ]
+		set_debug_level = int(sys.argv[1][2:])
+	elif len(sys.argv) >= 3 and sys.argv[len(sys.argv) - 1].startswith("-g") and len(sys.argv[len(sys.argv) - 1]) >= 2:
 		set_debug_level = int(sys.argv[len(sys.argv) - 1][2:])
 		flist = flist[:-1]
+
 
 	log(1, flist)
 	VocEditor(flist)
