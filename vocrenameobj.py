@@ -166,6 +166,7 @@ class VocEditor:
 if __name__ == '__main__':
 	if len(sys.argv) <= 2:
 		print("python3  vocrenameobj.py split_img_dir image_list  -g")
+		sys.exit()
 
 	split_img_dir = sys.argv[1]
 	flist = sys.argv[2:]

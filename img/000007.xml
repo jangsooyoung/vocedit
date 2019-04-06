@@ -1,32 +1,39 @@
 <annotation>
-	<folder>VOC2007</folder>
+	<folder>carno</folder>
 	<filename>000007.jpg</filename>
 	<source>
-		<database>The VOC2007 Database</database>
-		<annotation>PASCAL VOC2007</annotation>
+		<database>carno</database>
+		<annotation>carno</annotation>
 		<image>flickr</image>
-		<flickrid>194179466</flickrid>
 	</source>
-	<owner>
-		<flickrid>monsieurrompu</flickrid>
-		<name>Thom Zemanek</name>
-	</owner>
 	<size>
-		<width>500</width>
-		<height>333</height>
+		<width>1</width>
+		<height>1</height>
 		<depth>3</depth>
 	</size>
 	<segmented>0</segmented>
 	<object>
-		<name>car</name>
+		<name>?</name>
 		<pose>Unspecified</pose>
-		<truncated>1</truncated>
+		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>141</xmin>
-			<ymin>50</ymin>
-			<xmax>500</xmax>
-			<ymax>330</ymax>
+			<xmin>0.3209342560553633</xmin>
+			<ymin>0.265</ymin>
+			<xmax>0.5103806228373703</xmax>
+			<ymax>0.48333333333333334</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>?</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>0.4117647058823529</xmin>
+			<ymin>0.125</ymin>
+			<xmax>0.5856401384083045</xmax>
+			<ymax>0.3333333333333333</ymax>
 		</bndbox>
 	</object>
 </annotation>

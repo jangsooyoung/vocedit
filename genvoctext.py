@@ -98,4 +98,7 @@ if __name__ == '__main__':
 
 	voc = VocConv()
 	for fname in flist:
-		voc.conv(fname)
+		try:
+			voc.conv(fname)
+		except Exception as e:
+			print(fname, e)

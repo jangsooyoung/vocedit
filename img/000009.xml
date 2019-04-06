@@ -1,68 +1,39 @@
 <annotation>
-	<folder>VOC2007</folder>
+	<folder>carno</folder>
 	<filename>000009.jpg</filename>
 	<source>
-		<database>The VOC2007 Database</database>
-		<annotation>PASCAL VOC2007</annotation>
+		<database>carno</database>
+		<annotation>carno</annotation>
 		<image>flickr</image>
-		<flickrid>325443404</flickrid>
 	</source>
-	<owner>
-		<flickrid>autox4u</flickrid>
-		<name>Perry Aidelbaum</name>
-	</owner>
 	<size>
-		<width>500</width>
-		<height>375</height>
+		<width>1</width>
+		<height>1</height>
 		<depth>3</depth>
 	</size>
 	<segmented>0</segmented>
 	<object>
-		<name>horse</name>
-		<pose>Right</pose>
+		<name>?</name>
+		<pose>Unspecified</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>69</xmin>
-			<ymin>172</ymin>
-			<xmax>270</xmax>
-			<ymax>330</ymax>
+			<xmin>0.3088235294117647</xmin>
+			<ymin>0.36</ymin>
+			<xmax>0.4610726643598616</xmax>
+			<ymax>0.575</ymax>
 		</bndbox>
 	</object>
 	<object>
-		<name>person</name>
-		<pose>Right</pose>
+		<name>?</name>
+		<pose>Unspecified</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>150</xmin>
-			<ymin>141</ymin>
-			<xmax>229</xmax>
-			<ymax>284</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>person</name>
-		<pose>Right</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>285</xmin>
-			<ymin>201</ymin>
-			<xmax>327</xmax>
-			<ymax>331</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>person</name>
-		<pose>Left</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>258</xmin>
-			<ymin>198</ymin>
-			<xmax>297</xmax>
-			<ymax>329</ymax>
+			<xmin>0.43685121107266434</xmin>
+			<ymin>0.18</ymin>
+			<xmax>0.615916955017301</xmax>
+			<ymax>0.4666666666666667</ymax>
 		</bndbox>
 	</object>
 </annotation>
