@@ -9,7 +9,7 @@ Simple VOC Pascal data 편집기 <br>
 jpg을 읽은후 object 영역을 표시한후 저장 합니다.<br>
 xml 파일명은  jpg명 + '.xml'로 기록됩니다.<br>
 <br>
-![VOCEDIT](./image/VOC.jpg)<br>
+![VOCEDIT](./img/VOC.jpg)<br>
 <br>
 #프로그램 기동<br>
   python3 vocedit.py  jpg_xml_file list <br>
@@ -60,5 +60,3 @@ xml 파일명은  jpg명 + '.xml'로 기록됩니다.<br>
 <br>
  3. python3 vocrenameobk.py dest_dir img_List<br>
     vocsplit.py로  dest_dir 별로 분할된 Image목록을 읽어 XML의 객체명을 수정한다.<br>
-
-
