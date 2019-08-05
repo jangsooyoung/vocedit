@@ -9,10 +9,9 @@ The xml filename is written as jpg name + '.xml'. <br>
 ![VOCEDIT](./img/VOC.jpg) <br>
 <br>
 # Program Manipulation <br>
-  python3 vocedit.py jpg_xml_file list <br>
-  python3 vocedit_eng.py jpg_xml_file list # English Version <br>
-  - At least one Argument must have at least one jpg file. <br>
- Example) python3 vocedit.py  <br>
+  python3 vocedit.py [jpg_xml_file list] <br>
+  python3 vocedit_eng.py [jpg_xml_file list] # English Version <br>
+ Example)python3 vocedit.py [ image_file ] <br>
 <br>
 # Create Object <br>
  1. Select object region by dragging <br>
