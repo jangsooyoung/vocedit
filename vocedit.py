@@ -15,7 +15,7 @@ from datetime import datetime
 set_debug_level = 0
 
 def init_k():
-  global help_text, configm_msg, OName, OShow, OSearch, OunSelect, OSave, OErase, FName, FRead, FWrite
+  global help_text, configm_msg, OName, OShow, OSearch, OunSelect, OSave, OErase, FName, FRead, FWrite, ASave
   help_text = ("<<객체선택 조작>>\n"
        "전체선택  : Ctl-A \n"
        "전체선택취소 : ESC\n"
@@ -45,10 +45,11 @@ def init_k():
        "-객체선택후 Cntl+화살표\n")
 
   configm_msg = "총 {} 개의 선택 캑체의 명칭 및 (diffcult, truncated) 을 {}({},{}) 로 통일할까요 ?"
+  ASave = "자동저장"
   OName = "O명"
   OShow = "O보임"
   OSearch = "검색"
-  OunSelect = "O선택취소"
+  OunSelect = "O취소"
   OSave = "O저장"
   OErase = "O지움"
   FName = "파일명"
@@ -56,7 +57,7 @@ def init_k():
   FWrite = "저장"
 
 def init_e():
-  global help_text, configm_msg, OName, OShow, OSearch, OunSelect, OSave, OErase, FName, FRead, FWrite
+  global help_text, configm_msg, OName, OShow, OSearch, OunSelect, OSave, OErase, FName, FRead, FWrite, ASave
   help_text = ("<< Object selection operation >> \n"
     "Select all: Ctl-A \n"
     "Unselect all: ESC \n"
@@ -87,6 +88,7 @@ def init_e():
      )
 
   configm_msg = "Do you want to unify the names (diffcult, truncated) of the {}({},{}) selection bodies with {}?"
+  ASave = "AutoSave"
   OName   = "ObjName"
   OShow   = "ObjShow"
   OSearch   = "Search"
@@ -163,12 +165,14 @@ class VocEditor:
   def init_screen(self):
     # CUI
     self.root = Tk()
-    self.root.title("Pascal VOC Data Editor")
+    self.Title = "Pascal VOC Data Editor"
+    self.root.title(self.Title)
 
     # toolbar var
     self.curr_obj_name = StringVar()
-    self.curr_file_no = StringVar()
     self.curr_file_name = StringVar()
+    self.is_autosave = IntVar()
+    self.is_autosave.set(1)
     self.is_show_label = IntVar()
     self.is_show_label.set(1)
     self.is_difficult = IntVar()
@@ -188,8 +192,6 @@ class VocEditor:
     self.label3.pack(side=LEFT)
     self.curr_fname = Entry(toolbar, textvariable=self.curr_file_name, bd=1, width=20)
     self.curr_fname.pack(side=LEFT)
-    self.curr_fno = Entry(toolbar, textvariable=self.curr_file_no, bd=1, width=3)
-    self.curr_fno.pack(side=LEFT)
 
     self.btn_read = Button(toolbar, text=FRead, command=self.onRead)
     self.btn_read.pack(side=LEFT)
@@ -203,6 +205,8 @@ class VocEditor:
     self.btn_next = Button(toolbar, text=">>", command=self.onNext)
     self.btn_next.pack(side=LEFT)
     self.root.bind('<Next>', self.onNext)
+    self.auto_save = Checkbutton(toolbar, text=ASave, variable=self.is_autosave, command=self.onAutosave)
+    self.auto_save.pack(side=LEFT)
 
     Label(toolbar, width=1).pack(side=LEFT)
     self.label1 = Label(toolbar, text=OName)
@@ -279,6 +283,9 @@ class VocEditor:
     messagebox.showinfo("Help", help_text)
 
   def ondifficult(self):
+    pass
+
+  def onAutosave(self):
     pass
 
   def onTruncated(self):
@@ -380,12 +387,13 @@ class VocEditor:
 
   def onSave(self, event=None):
     log(1, 'onSave nobj={}'.format(len(self.object_list)))
-    self.saveVocXml(self.image_list[self.curr_image_index], self.org_img_width, self.org_img_height,
-            self.object_list)
+    self.saveVocXml(self.image_list[self.curr_image_index], self.org_img_width, self.org_img_height, self.object_list)
     self.beep1()
 
   def onPrev(self, event=None):
     log(2, 'onPrev')
+    if self.is_autosave.get() == 1:
+       self.saveVocXml(self.image_list[self.curr_image_index], self.org_img_width, self.org_img_height, self.object_list)
     if self.curr_image_index > 0:
       # self.btn_prev.config(state=DISABLED)
       self.curr_image_index -= 1
@@ -395,6 +403,8 @@ class VocEditor:
     
   def onNext(self, event=None):
     log(2, 'onNext')
+    if self.is_autosave.get() == 1:
+       self.saveVocXml(self.image_list[self.curr_image_index], self.org_img_width, self.org_img_height, self.object_list)
     if self.curr_image_index + 1 < len(self.image_list):
       # self.btn_next.config(state=DISABLED)
       self.curr_image_index += 1
@@ -604,8 +614,8 @@ class VocEditor:
     log(2, 'loadXml start')
     #if self.curr_image_index <= len(self.image_list):
     curr_img_fname = self.image_list[self.curr_image_index]
-    self.curr_file_no.set("{}".format(self.curr_image_index))
     self.curr_file_name.set(self.image_list[self.curr_image_index])
+    self.root.title(self.Title+":"  + curr_img_fname)
     self.loadVocXml(curr_img_fname.replace(".jpg", ""))
     self.org_img_width, self.org_img_height, self.object_list = self.loadVocXml(curr_img_fname.replace(".jpg", ""))
     log(2, 'loadXml ok self.object_list= {}, org_img_width={}'.format(len(self.object_list), self.org_img_width))
@@ -653,7 +663,7 @@ class VocEditor:
   def create_rectangle_tagged(self, name, x1, y1, x2, y2, thickness=2, color='white'):
     objectBox = objectNm = objectNmBg = None
     if self.is_show_label.get() != 0:
-      objectNm = self.canvas.create_text(x1, y1 - 12, text=name, fill='black')
+      objectNm = self.canvas.create_text(x1+5, y1 + 8, text=name, fill='black')
       objectNmBg = self.canvas.create_rectangle(self.canvas.bbox(objectNm), fill=color)
       self.canvas.tag_lower(objectNmBg, objectNm)
     lcolor ='yellow'
@@ -698,6 +708,8 @@ class VocEditor:
     recalc_height = 1
     if width == 1 and height == 1:
       recalc_width, recalc_height = self.org_img.size
+    max_w = int(width * recalc_width)
+    max_h = int(height * recalc_height)
 
     fname = os.path.basename(path_file_name)
     xml = []
@@ -710,8 +722,8 @@ class VocEditor:
     xml.append("    <image>flickr</image>")
     xml.append("  </source>")
     xml.append("  <size>")
-    xml.append("        <width>{}</width>".format(int(width * recalc_width)))
-    xml.append("        <height>{}</height>".format(int(height * recalc_height)))
+    xml.append("        <width>{}</width>".format(max_w))
+    xml.append("        <height>{}</height>".format(max_h))
     xml.append("    <depth>3</depth>")
     xml.append("  </size>")
     xml.append("  <segmented>0</segmented>")
@@ -727,20 +739,20 @@ class VocEditor:
       xml.append("    <truncated>{}</truncated>".format(obj.truncated))
       xml.append("    <difficult>{}</difficult>".format(obj.difficult))
       xml.append("    <bndbox>")
-      xml.append("            <xmin>{}</xmin>".format(int(obj.xmin * recalc_width)))
-      xml.append("            <ymin>{}</ymin>".format(int(obj.ymin * recalc_height)))
-      xml.append("            <xmax>{}</xmax>".format(int(obj.xmax * recalc_width)))
-      xml.append("            <ymax>{}</ymax>".format(int(obj.ymax * recalc_height)))
+      xml.append("            <xmin>{}</xmin>".format(max(0,       int(obj.xmin * recalc_width))))
+      xml.append("            <ymin>{}</ymin>".format(max(0,       int(obj.ymin * recalc_height))))
+      xml.append("            <xmax>{}</xmax>".format(min(max_w-1, int(obj.xmax * recalc_width))))
+      xml.append("            <ymax>{}</ymax>".format(min(max_h-1, int(obj.ymax * recalc_height))))
       xml.append("    </bndbox>")
       part_list = self.getPartList(obj)
       for sobj in part_list:
         xml.append("    <part>")
         xml.append("      <name>{}</name>".format(sobj.name))
         xml.append("      <bndbox>")
-        xml.append("                <xmin>{}</xmin>".format(int(sobj.xmin * recalc_width)))
-        xml.append("                <ymin>{}</ymin>".format(int(sobj.ymin * recalc_height)))
-        xml.append("                <xmax>{}</xmax>".format(int(sobj.xmax * recalc_width)))
-        xml.append("                <ymax>{}</ymax>".format(int(sobj.ymax * recalc_height)))
+        xml.append("                <xmin>{}</xmin>".format(max(0,       int(sobj.xmin * recalc_width))))
+        xml.append("                <ymin>{}</ymin>".format(max(0,       int(sobj.ymin * recalc_height))))
+        xml.append("                <xmax>{}</xmax>".format(min(max_w-1, int(sobj.xmax * recalc_width))))
+        xml.append("                <ymax>{}</ymax>".format(min(max_h-1, int(sobj.ymax * recalc_height))))
         xml.append("      </bndbox>")
         xml.append("    </part>")
       xml.append("  </object>")
