@@ -523,6 +523,8 @@ class VocEditor:
         self.select_list.append(obj)
       # 현제 Object Name Update
       self.curr_obj_name.set(obj.name)
+      self.entry1.select_range(0, END)
+      self.entry1.focus()
       self.is_difficult.set(obj.difficult)
       self.is_truncated.set(obj.truncated)
       log(4, "onSelected ..")
@@ -666,14 +668,13 @@ class VocEditor:
       objectNm = self.canvas.create_text(x1+5, y1 + 8, text=name, fill='black')
       objectNmBg = self.canvas.create_rectangle(self.canvas.bbox(objectNm), fill=color)
       self.canvas.tag_lower(objectNmBg, objectNm)
-    lcolor ='yellow'
-    if name == 'a': lcolor='white'
-    if name == 'b': lcolor='light gray'
-    if name == 'c': lcolor='yellow'
-    if name == 'd': lcolor='orange'
-    if name == 'e': lcolor='purple'
-    if name == 'f': lcolor='red'
-    if name == 'x': lcolor='black'
+
+    lcolor ='white' # unknow
+    if   name == 'h': lcolor='light gray' # hand
+    elif name == 'f': lcolor='yellow'     # face
+    elif name == 'c': lcolor='orange'     # close lip
+    elif name == 'o': lcolor='purple'     # open lip
+    elif name == 'm': lcolor='black'      # mask face
     objectBox = self.canvas.create_rectangle(x1, y1, x2, y2, width=thickness, outline=lcolor)
 
     # self.canvas.itemconfig(objectBox, tag=name)
